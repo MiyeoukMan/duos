@@ -47,7 +47,7 @@
 ## 출시 전에 직접 할 것
 
 1. **Apple Developer Program(유료, 연 99달러) 가입.** 지금 서명 팀(3C3P339A53)은 무료 팀이라 App Store에 못 낸다. 가입 후 Xcode의 팀을 바꾸고 App Store Connect에서 번들 ID로 앱을 만든다.
-2. **소스 공개(GPL-3.0 의무).** 커밋 작성자를 정해 첫 커밋 → 공개 저장소(예: GitHub)를 만들어 올리고(`git remote add origin … && git push -u origin main`), 주소를 `app/DuoDS/App/Settings.swift`의 `sourceCodeURL`에 넣는다(넣으면 설정 › 정보에 "소스 코드" 줄이 생긴다).
+2. ~~**소스 공개(GPL-3.0 의무).**~~ 2026-10-26 끝: 공개 저장소 https://github.com/MiyeoukMan/duos (작성자 KELP STUDIO), 앱 설정 › 정보 › "소스 코드"가 그 주소를 연다. 받기: `git clone --recursive https://github.com/MiyeoukMan/duos.git`. 앞으로 앱을 고치면 커밋해서 올려 두기(출시한 빌드의 소스와 맞게).
 3. **melonDS 팀에 문의(권장).** App Store 약관과 GPL이 맞지 않는다는 논란이 있다(2011년 VLC가 이 문제로 내려감). melonDS 저작권자에게 App Store 배포에 대한 입장을 미리 물어 두는 게 안전하다.
 4. **개인정보처리방침 게시.** `docs/privacy-policy.md`(한/영 초안 — 시행일 · 연락처 빈칸)를 웹에 올리고 주소를 App Store Connect에 넣는다.
 5. **App Store 개인정보 항목.** 개발자 서버가 없으니 "데이터를 수집하지 않음"이 기본 답. 다만 온라인 플레이를 켜면 게임이 사용자가 고른 외부 서버로 본체 이름 · 무작위 MAC · 접속 ID · IP를 보낸다(처리방침에 적어 둠). 이걸 "수집"으로 볼지는 직접 판단 — 보수적으로 가려면 "기타 데이터 · 앱 기능용 · 사용자와 연결 안 됨"으로 적는다.

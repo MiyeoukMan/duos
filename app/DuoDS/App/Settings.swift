@@ -114,8 +114,8 @@ final class Settings {
     /// 꽂혀 있는 카트리지(ROM 파일 이름) — 앱을 다시 켜도 그대로
     var insertedCartridge: String? { get { d.string(forKey: "insertedCartridge") } set { d.set(newValue, forKey: "insertedCartridge") } }
 
-    /// GPL-3.0 소스 공개 주소 — 출시 전에 공개 저장소 주소를 넣는다(비어 있으면 정보 화면에 줄이 안 보인다)
-    static let sourceCodeURL: URL? = nil
+    /// GPL-3.0 소스 공개 주소(설정 › 정보 › 소스 코드)
+    static let sourceCodeURL = URL(string: "https://github.com/MiyeoukMan/duos")
 
     static let languageNames = ["日本語", "English", "Français", "Deutsch", "Italiano", "Español"]
 }
