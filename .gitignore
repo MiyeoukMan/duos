@@ -1,0 +1,21 @@
+# 빌드 산출물 · 아카이브
+/build/
+DerivedData/
+*.xcarchive
+*.ipa
+testrom-obj/
+
+# Xcode · macOS 개인 파일
+xcuserdata/
+*.xcuserstate
+.DS_Store
+
+# 게임 파일 · 세이브는 올리지 않는다(데모 카트리지는 직접 만든 시험 프로그램이라 예외)
+*.nds
+*.sav
+*.dsv
+*.mst
+!app/DuoDS/Samples/duos-demo.nds
+
+# 이 맥의 기기 정보(UDID)
+tools/device.local
