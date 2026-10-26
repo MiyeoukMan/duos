@@ -289,6 +289,8 @@ void main(void)
         if (m > 160) m = 160;
         fill(250, 28, 5, 160 - m, RGB(4, 4, 6));
         fill(250, 188 - m, 5, m, RGB(6, 31, 12));
+        // 뚜껑: ARM7이 옮겨 준 KEYXY 비트 7(1 = 닫힘) — 닫혀 있으면 오른쪽 아래 구석이 빨강
+        fill(238, 180, 8, 8, (SHARED->keyxy & 0x80) ? RGB(31, 4, 4) : RGB(8, 8, 12));
 
         vblank();
     }

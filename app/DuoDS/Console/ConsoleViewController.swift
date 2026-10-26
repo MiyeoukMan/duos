@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 /// 앱의 단 하나의 화면: 듀오를 접으면 DS 뒷면(가로), 펼치면 펼친 DS(세로).
 ///
 /// - 접은 상태: 슬롯을 누르면 카트리지 고르기 → 고르면 꽂는 애니메이션, 그와 함께 뒤에서 부팅해 둔다. 배터리 덮개를 누르면 설정.
+///   접는 순간 = DS 뚜껑 닫기(GameSession.close — 게임에 알리고 잠깐 뒤 저장), 펴는 순간 = 뚜껑 열기(GameSession.play).
 /// - 펼치는 순간: 꽂힌 카드가 있으면 바로 돈다(없으면 "카드 없음" 화면). SETTINGS 버튼 = 설정(게임 메뉴 포함).
 /// - 접는 순간: 그 자리를 자동 저장하고 멈춘다(전원 불빛이 천천히 깜빡임). 다시 펼치면 이어서.
 /// 접힘은 UIHingeInteraction. 시뮬레이터에선 실행 인자 `-DuoHinge closed|partial`과 두 손가락 톡(접기 ↔ 펴기).
@@ -277,7 +278,8 @@ final class ConsoleViewController: UIViewController {
         // 켠 적이 있으면 DS처럼 절전(천천히 깜빡임), 아니면 꺼짐
         closedView.leds.power = s.hasRun || s.hasSuspend ? .sleeping : .off
         closedView.caption = "\(s.rom.title)\n\(s.hasRun || s.hasSuspend ? "펼치면 이어서 합니다" : "펼치면 시작합니다")"
-        s.suspend { [weak self] saved in
+        // 실제 DS처럼 뚜껑을 닫고(게임은 대개 절전) 잠깐 뒤 그 자리를 저장
+        s.close { [weak self] saved in
             guard let self, self.session === s, self.folded == true else { return }
             if saved {
                 self.closedView.caption = "\(s.rom.title)\n자동 저장됨 · 펼치면 이어서"

@@ -214,11 +214,11 @@ def make_banner(titles, kind):
     return bytes(b)
 
 
-def build(out, title=None, code=b"DUOT", icon=None, defines=(), header=b"DUODS TEST"):
+def build(out, title=None, code=b"DUOT", icon=None, defines=(), header=b"DUODS TEST", defines7=()):
     tmp = os.path.join(os.path.dirname(os.path.abspath(out)), "testrom-obj")
     os.makedirs(tmp, exist_ok=True)
     compile_c(os.path.join(SRC, "arm9.c"), os.path.join(tmp, "arm9.o"), "arm9", defines)
-    compile_c(os.path.join(SRC, "arm7.c"), os.path.join(tmp, "arm7.o"), "arm7")
+    compile_c(os.path.join(SRC, "arm7.c"), os.path.join(tmp, "arm7.o"), "arm7", defines7)
     arm9 = link(os.path.join(tmp, "arm9.o"), ARM9_BASE)
     arm7 = link(os.path.join(tmp, "arm7.o"), ARM7_BASE)
 
@@ -277,6 +277,9 @@ if __name__ == "__main__":
         # 앱에 넣는 데모 카트리지(심사 · 처음 켠 사람용) — 시험 프로그램 그대로: 버튼 · 터치 그림판 · 마이크 · 3D 삼각형 · 소리
         build(sys.argv[2] if len(sys.argv) > 2 else "app/DuoDS/Samples/duos-demo.nds",
               {1: "DuoS Demo\nButtons · Touch · Mic · 3D", 7: "DuoS 데모\n버튼 · 터치 · 마이크 · 3D"}, b"DUOD", "slime", header=b"DUOS DEMO")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--sleeptest":
+        # 뚜껑을 닫으면 절전에 드는 시험 ROM(접기 = 뚜껑 닫기 · 깨우기 시험용)
+        build(sys.argv[2] if len(sys.argv) > 2 else "build/sleep.nds", code=b"DUSL", defines7=("SLEEP_ON_LID",))
     elif len(sys.argv) > 1 and sys.argv[1] == "--scene3d":
         # 3D 시험 장면(텍스처 · 원근 · 반투명 · 안개 · 가장자리) — 3D 내부 해상도 비교용
         build(sys.argv[2] if len(sys.argv) > 2 else "build/scene3d.nds", code=b"DU3D", defines=("SCENE3D",))

@@ -477,6 +477,7 @@ void ds_set_touch(DSCore* core, int touching, int x, int y)
 }
 
 void ds_set_lid_closed(DSCore* core, int closed) { if (core) core->lidClosed.store(closed ? 1 : 0); }
+int ds_is_asleep(DSCore* core) { return core && core->nds && (core->nds->CPUStop & CPUStop_Sleep) ? 1 : 0; }
 
 void ds_set_mac(DSCore* core, const uint8_t mac[6])
 {
@@ -605,6 +606,10 @@ int ds_load_state(DSCore* core, const char* path)
         core->nds->DoSavestate(backup.get());
         return -4;
     }
+    // 상태에는 뚜껑 비트가 없고(지금 값이 그대로 남는다) 절전 여부는 있다. 절전으로 저장된 게임(접어서 잠든 채 저장)은
+    // 뚜껑이 닫힌 것으로 맞춰 두면, 다음 프레임에 지금 원하는 뚜껑(ds_set_lid_closed)이 열림일 때 "뚜껑 열림"으로 깨어난다
+    if (core->nds->CPUStop & CPUStop_Sleep) core->nds->SetLidClosed(true);
+    core->lidApplied = core->nds->IsLidClosed();
     core->running = true;
     return 0;
 }

@@ -100,10 +100,41 @@ def main():
     out = run("--frames", "61", "--state-load", f"10:{st}", "--png-at", f"60:{b}")
     check("상태 불러오기 → 같은 화면", open(a, "rb").read() == open(b, "rb").read(), out.strip())
 
+    # 접기 = 뚜껑 닫기: 게임은 ARM7 KEYXY 비트 7로 안다(시험 ROM은 아래 화면 구석 (238,180)이 빨강)
+    def lid_red(path):
+        c = bottom(png(path), 241, 183)
+        return c[0] > 200 and c[1] < 80
+    la, lb, lc = (os.path.join(TMP, n) for n in ("lid-a.png", "lid-b.png", "lid-c.png"))
+    lst = os.path.join(TMP, "lid.mst")
+    run("--frames", "31", "--lid", "10-40", "--png-at", f"30:{la}", "--state-save", f"30:{lst}")
+    check("뚜껑을 닫으면 게임이 안다", lid_red(la))
+    run("--frames", "61", "--lid", "10-40", "--png-at", f"60:{lb}")
+    check("다시 열면 게임도 열린 것으로 안다", not lid_red(lb))
+    sleep_checks()
+
     hires_checks()
 
     print(f"{sum(results)}/{len(results)} passed")
     return 0 if all(results) else 1
+
+
+# ── 접기 = 뚜껑 닫기: 절전 · 깨우기(mkrom.py --sleeptest — 뚜껑이 닫히면 ARM7이 절전) ──
+SLEEPROM = os.path.join(ROOT, "build/sleep.nds")
+
+
+def asleep(out):
+    return [l for l in out.splitlines() if l.startswith("asleep ")][-1] == "asleep 1"
+
+
+def sleep_checks():
+    subprocess.check_call([sys.executable, os.path.join(ROOT, "tools/mkrom.py"), "--sleeptest", SLEEPROM], stdout=subprocess.DEVNULL)
+    st = os.path.join(TMP, "sleep.mst")
+    check("뚜껑을 닫으면 게임이 절전에 든다", asleep(run_rom(SLEEPROM, "--frames", "31", "--lid", "10-40", "--state-save", f"30:{st}")))
+    check("뚜껑을 열면 깨어난다", not asleep(run_rom(SLEEPROM, "--frames", "61", "--lid", "10-40")))
+    a = os.path.join(TMP, "sleep-a.png")
+    out = run_rom(SLEEPROM, "--frames", "41", "--state-load", f"5:{st}", "--press", "20-40:A", "--png-at", f"40:{a}")
+    woke = not asleep(out) and lit(bottom(png(a), 4 + 9, 11))
+    check("잠든 채 저장한 상태를 불러와 펼치면 깨어나 다시 돈다(앱을 다시 켠 뒤 이어 하기)", woke, out.strip().splitlines()[-1])
 
 
 # ── 3D 내부 해상도(dsrun --scale) ─────────────────────────────

@@ -74,7 +74,8 @@ int ds_is_running(DSCore* core);   // 게임이 스스로 꺼지면(전원 끄�
 
 void ds_set_keys(DSCore* core, uint32_t pressed);   // DS_KEY_* 비트
 void ds_set_touch(DSCore* core, int touching, int x, int y);   // 아래 화면 좌표(0~255, 0~191)
-void ds_set_lid_closed(DSCore* core, int closed);
+void ds_set_lid_closed(DSCore* core, int closed);   // 접기 = DS 뚜껑 닫기(대부분 게임은 절전, 여는 순간 깨어남)
+int ds_is_asleep(DSCore* core);                     // 게임이 절전에 들어가 있으면 1(에뮬레이션 스레드에서)
 void ds_set_mic_blow(DSCore* core, int blowing);   // 마이크에 바람 부는 소리를 넣는다
 
 // 한 프레임(1/59.83초)을 돌린다. 끝나면 화면 · 소리가 새로 생긴다.

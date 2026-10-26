@@ -1,4 +1,4 @@
-// 시험 ROM — ARM7 쪽. X · Y 버튼 · 펜(KEYXY), 터치 좌표(TSC), 마이크 세기를 읽어 SHARED에 적고,
+// 시험 ROM — ARM7 쪽. X · Y 버튼 · 펜 · 뚜껑(KEYXY), 터치 좌표(TSC), 마이크 세기를 읽어 SHARED에 적고,
 // A를 누르는 동안 PSG 채널 8로 440Hz 네모파를 낸다.
 
 typedef unsigned char u8;
@@ -17,6 +17,8 @@ typedef signed int s32;
 #define SOUND8CNT REG32(0x04000480)
 #define SOUND8TMR REG16(0x04000488)
 #define SOUNDCNT  REG16(0x04000500)
+#define IE7       REG32(0x04000210)
+#define HALTCNT   (*(volatile u8*)0x04000301)
 
 struct Shared { volatile u32 frame7; volatile u16 keyxy; volatile u16 tx, ty; volatile u16 mic; };
 #define SHARED ((struct Shared*)0x023F0000)
@@ -53,6 +55,17 @@ void main(void)
     {
         u16 xy = KEYXY;
         SHARED->keyxy = xy;
+#ifdef SLEEP_ON_LID
+        // 실제 게임처럼: 뚜껑이 닫히면 절전 — "뚜껑 열림" IRQ(22)로 깨어난다
+        if (xy & 0x80)
+        {
+            IE7 |= 1u << 22;
+            HALTCNT = 0xC0;
+            // 깨어날 때까지 — melonDS는 HALTCNT를 쓴 뒤 몇 명령을 더 돌아서, 바로 다시 읽으면 닫힌 값을 본 채 또 잠든다
+            while (KEYXY & 0x80) {}
+            continue;
+        }
+#endif
         if (!(xy & 0x40))
         {
             SHARED->tx = (u16)(tsc(0xD0) >> 4);

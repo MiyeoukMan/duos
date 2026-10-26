@@ -1,7 +1,7 @@
 // dsrun — 화면 없이 DS ROM을 돌려 본다(macOS). 두 화면을 PNG로, 소리를 WAV로 남기고, 속도를 잰다.
 //
 //   dsrun <rom> [--frames N] [--png out.png] [--png-at F:out.png] [--wav out.wav] [--save game.sav]
-//               [--press F1-F2:KEYS] [--touch F1-F2:X,Y] [--blow F1-F2] [--state-save F:path] [--state-load F:path] [--quiet]
+//               [--press F1-F2:KEYS] [--touch F1-F2:X,Y] [--blow F1-F2] [--lid F1-F2] [--state-save F:path] [--state-load F:path] [--quiet]
 //               [--scale N] [--scale-at F:N]
 //
 //   KEYS는 A B X Y L R START SELECT UP DOWN LEFT RIGHT를 + 로 잇는다(예: 100-110:START, 200-260:RIGHT+B).
@@ -22,6 +22,7 @@
 struct Press { int from, to; uint32_t keys; };
 struct Touch { int from, to, x, y; };
 struct Blow { int from, to; };
+struct Lid { int from, to; };   // 그 프레임들 동안 뚜껑을 닫는다
 struct Shot { int frame; std::string path; };
 struct StateOp { int frame; std::string path; bool save; };
 struct ScaleOp { int frame, scale; };
@@ -153,6 +154,7 @@ int main(int argc, char** argv)
     std::vector<ScaleOp> scaleOps;   // 도중에 3D 배율 바꾸기(앱 설정처럼)
     std::vector<Touch> touches;
     std::vector<Blow> blows;
+    std::vector<Lid> lids;
     std::vector<Shot> shots;
     std::vector<StateOp> states;
 
@@ -170,6 +172,7 @@ int main(int argc, char** argv)
         else if (a == "--press") { Press p; std::string rest; ParseRange(next(), p.from, p.to, rest); p.keys = ParseKeys(rest); presses.push_back(p); }
         else if (a == "--touch") { Touch t; std::string rest; ParseRange(next(), t.from, t.to, rest); sscanf(rest.c_str(), "%d,%d", &t.x, &t.y); touches.push_back(t); }
         else if (a == "--blow") { Blow b; std::string rest; ParseRange(next(), b.from, b.to, rest); blows.push_back(b); }
+        else if (a == "--lid") { Lid l; std::string rest; ParseRange(next(), l.from, l.to, rest); lids.push_back(l); }
         else if (a == "--png-at") { Shot s; int to; ParseRange(next(), s.frame, to, s.path); shots.push_back(s); }
         else if (a == "--state-save" || a == "--state-load") { StateOp o; int to; ParseRange(next(), o.frame, to, o.path); o.save = a == "--state-save"; states.push_back(o); }
         else { fprintf(stderr, "unknown option %s\n", a.c_str()); return 2; }
@@ -202,6 +205,9 @@ int main(int argc, char** argv)
         bool blowing = false;
         for (auto& b : blows) if (f >= b.from && f <= b.to) blowing = true;
         ds_set_mic_blow(core, blowing);
+        bool lid = false;
+        for (auto& l : lids) if (f >= l.from && f <= l.to) lid = true;
+        ds_set_lid_closed(core, lid);
         for (auto& o : states)
         {
             if (o.frame != f) continue;
@@ -226,6 +232,7 @@ int main(int argc, char** argv)
 
     printf("frames %d in %.2fs = %.1f fps (%.1fx real time)\n", frames, secs, frames / secs, frames / secs / 59.8261);
     printf("audio %ld frames (%.2fs), rms %.1f\n", samples / 2, samples / 2.0 / DS_AUDIO_RATE, samples ? std::sqrt(sumSq / samples) : 0.0);
+    printf("asleep %d\n", ds_is_asleep(core));
     if (!png.empty()) printf("png %s: %s\n", png.c_str(), WritePng(png, core) ? "ok" : "failed");
     if (!wav.empty()) WriteWav(wav, pcm);
     if (!save.empty()) printf("save flush: %d\n", ds_flush_save(core));
